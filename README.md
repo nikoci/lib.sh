@@ -1,4 +1,4 @@
-<img align="left" src="http://dehys.com/libsh.png" width=256 style="margin-right: 35px">
+<img align="left" src="https://raw.githubusercontent.com/dehys/lib.sh/main/resources/libsh.png" width=256 style="margin-right: 35px">
 
 **Lib.sh is a collection of scripts made for automating different aspects to make development life easier for software engineers.**
 
