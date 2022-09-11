@@ -16,7 +16,23 @@ PUBLICITY=""
 ORGANIZATION=""
 
 help() {
-    echo -e "Help for mkrepo"
+    echo ""
+    echo -e "\e[1;33mMKREPO HELP:
+  \e[0;36mOptions -\e[0m mkrepo (Repo Name) [Options]\e[0m
+\t-u, -user\t  -\tSpecifies what username to use when creating the repository
+\t-t, -token\t  -\tSpecifies the token to use when creating the repository
+\t-p, -publicity\t  -\tRepository publicity, either private or public. Public by default
+\t-o, -org\t  -\tSpecifies which organization to create the repository in. None by default
+\t-r, -readme\t  -\tSpecifies what readme template to use. Normal by default
+
+  \e[0;36mOptions -\e[0m mkrepo (Options)\e[0m
+\t--help\t\t  -\tShows this message, general help for mkrepo
+\t--get-user\t  -\tGets the user specified in the configuration file
+\t--set-user\t  -\tSets the user in the configuration file
+\t--get-token\t  -\tGets the token specified in the configuration file
+\t--set-token\t  -\tSets the token in the configuration file"
+    echo ""
+    exit 0
 }
 
 is_valid_type() {
@@ -28,23 +44,23 @@ is_valid_type() {
 }
 
 throw_error() {
-    echo -e "\t\e[0;36mError »\e[0m $1"
-    echo -e "\t\e[1;33mNeed help? use \e[0mmkrepo --help"
+    echo -e "  \e[0;36mError »\e[0m $1"
+    echo -e "  \e[1;33mNeed help? use \e[0mmkrepo --help"
 }
 
 print_arguments() {
     echo -e "\n"
-    echo -e "\t\e[0;36mRepo name: $REPO_NAME\e[0m"
-    echo -e "\t\e[0;36mType: $TYPE\e[0m"
-    echo -e "\t\e[0;36mUser: $USER\e[0m"
-    echo -e "\t\e[0;36mToken: $TOKEN\e[0m"
-    echo -e "\t\e[0;36mPublicity: $PUBLICITY\e[0m"
-    echo -e "\t\e[0;36mOrganization: $ORGANIZATION\e[0m"
+    echo -e "  \e[0;36mRepo name: $REPO_NAME\e[0m"
+    echo -e "  \e[0;36mType: $TYPE\e[0m"
+    echo -e "  \e[0;36mUser: $USER\e[0m"
+    #echo -e "  \e[0;36mToken: $TOKEN\e[0m"
+    echo -e "  \e[0;36mPublicity: $PUBLICITY\e[0m"
+    echo -e "  \e[0;36mOrganization: $ORGANIZATION\e[0m"
     echo -e "\n"
-    echo -e "\t\e[0;36mConfig Location: $config_location\e[0m"
-    echo -e "\t\e[0;36mAbsolute Config Location: $absolute_config_location\e[0m"
-    echo -e "\t\e[0;36mConfig User: $config_user\e[0m"
-    echo -e "\t\e[0;36mConfig Token: $config_token\e[0m"
+    echo -e "  \e[0;36mConfig Location: $config_location\e[0m"
+    echo -e "  \e[0;36mAbsolute Config Location: $absolute_config_location\e[0m"
+    echo -e "  \e[0;36mConfig User: $config_user\e[0m"
+    #echo -e " \e[0;36mConfig Token: $config_token\e[0m"
     echo -e "\n"
 }
 
@@ -54,10 +70,10 @@ if [ ! -z "$1" ]; then
 
     if [ "$1" == "--help" ]; then
         help
-
+        exit
     elif [ "$1" == "--get-user" ]; then
         echo "$config_user"
-
+        exit
     elif [ "$1" == "--set-user" ]; then
         if [ -n "$2" ]; then
             if [ -n "$3" ]; then
@@ -69,10 +85,10 @@ if [ ! -z "$1" ]; then
         else
             throw_error "mkrepo --set-user (USERNAME)"
         fi
-
+        exit
     elif [ "$1" == "--get-token" ]; then
         echo "$config_token"
-
+        exit
     elif [ "$1" == "--set-token" ]; then
         if [[ -n "$2" ]] ; then
             if [[ -n "$3" ]] ; then
@@ -84,14 +100,14 @@ if [ ! -z "$1" ]; then
         else
             throw_error "mkrepo --set-token (TOKEN)"
         fi
-
+        exit
     else
         REPO_NAME="$1"
 
     fi
 else
     throw_error "mkrepo (NAME) [- OPTIONS]"
-
+    exit
 fi
 
 
@@ -99,7 +115,7 @@ if [ ! -z "$REPO_NAME" ]; then
     #OPTIONS
     while [ ! -z "$2" ]; do
         case "$2" in
-            -t|-type)
+            -r|-readme)
                 shift
                 TYPE="$2"
             ;;
@@ -107,7 +123,7 @@ if [ ! -z "$REPO_NAME" ]; then
                 shift
                 USER="$2"
             ;;
-            -T|-token)
+            -t|-token)
                 shift
                 TOKEN="$2"
             ;;
@@ -115,7 +131,7 @@ if [ ! -z "$REPO_NAME" ]; then
                 shift
                 PUBLICITY="$2"
             ;;
-            -org|-organization)
+            -o|-org)
                 shift
                 ORGANIZATION="$2"
             ;;
@@ -154,6 +170,13 @@ else
     GITHUB_USER="$ORGANIZATION"
 fi
 
+#Check the publicity and change it accordingly
+if [ "$PUBLICITY" == "public" ]; then
+    PUBLICITY="false"
+elif [ "$PUBLICITY" == "private" ]; then
+    PUBLICITY="true"
+fi
+
 #CREATE REPO
 if [ -z "$REPO_NAME" ]; then
     read -p "Enter Github Repository Name: " REPO_NAME
@@ -163,15 +186,15 @@ mkdir ./$REPO_NAME
 cd ./$REPO_NAME
 echo -e "\e[1;32mCreating repository...\e[0m"
 printf "\n"
-echo -e "\t\e[31mCreated local directory \e[0;36m$REPO_NAME\e[0m"
+echo -e "  \e[31mCreated local directory \e[0;36m$REPO_NAME\e[0m"
 
 #CHECKING IF GITHUB_USER IS USER OR ORGANIZATION, AND HANDELING IT ACCORDINGLY
 if [ "$GITHUB_USER" != "$USER" ]; then
-    curl -s -o /dev/null -u $TOKEN:x-oauth-basic https://api.github.com/orgs/$GITHUB_USER/repos -d "{\"name\":\"$REPO_NAME\"}"
-    echo -e "\t\e[31mCreated remote repository in organization \e[0;36m$GITHUB_USER@github/$REPO_NAME\e[0m"
+    curl -s -o /dev/null -u $TOKEN:x-oauth-basic https://api.github.com/orgs/$GITHUB_USER/repos -d "{\"name\":\"$REPO_NAME\",\"private\":$PUBLICITY}"
+    echo -e "  \e[31mCreated remote repository in organization \e[0;36m$GITHUB_USER@github/$REPO_NAME\e[0m"
 else
-    curl -s -o /dev/null -u $TOKEN:x-oauth-basic https://api.github.com/user/repos -d "{\"name\":\"$REPO_NAME\"}"
-    echo -e "\t\e[31mCreated remote repository \e[0;36m$GITHUB_USER@github/$REPO_NAME\e[0m"
+    curl -s -o /dev/null -u $TOKEN:x-oauth-basic https://api.github.com/user/repos -d "{\"name\":\"$REPO_NAME\",\"private\":$PUBLICITY}"
+    echo -e "  \e[31mCreated remote repository \e[0;36m$GITHUB_USER@github/$REPO_NAME\e[0m"
 fi
 
 #README.MD TEMPLATE
@@ -180,12 +203,12 @@ sed -i "s/^# Project Name.*/# $REPO_NAME/" ./README.md
 
 
 git init >/dev/null 2>/dev/null
-echo -e "\t\e[31mInitialized local repository \e[0;36m$REPO_NAME\e[0m"
+echo -e "  \e[31mInitialized local repository \e[0;36m$REPO_NAME\e[0m"
 git add README.md >/dev/null 2>/dev/null
 git commit -m "first commit" >/dev/null 2>/dev/null
 git branch -M main >/dev/null 2>/dev/null
 git remote add origin https://github.com/$GITHUB_USER/$REPO_NAME.git >/dev/null 2>/dev/null
-echo -e "\t\e[31mPointed to remote \e[0;36m$LOCATION/$REPO_NAME (LOCAL) \e[1;33m» \e[0;36m$GITHUB_USER@github/$REPO_NAME (REMOTE)\e[0m"
+echo -e "  \e[31mPointed to remote \e[0;36m$LOCATION/$REPO_NAME (LOCAL) \e[1;33m» \e[0;36m$GITHUB_USER@github/$REPO_NAME (REMOTE)\e[0m"
 git push -u origin main >/dev/null 2>/dev/null
 printf "\n"
 DURATION=$(( $(date +%s) - START_TIME ))
